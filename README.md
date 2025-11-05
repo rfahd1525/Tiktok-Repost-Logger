@@ -278,16 +278,6 @@ Run in non-headless mode to see what's happening:
 HEADLESS=false python repost_logger.py
 ```
 
-## Security Best Practices
-
-**⚠️ NEVER commit your `.env` file to version control!**
-
-- The `.env` file contains sensitive credentials and is already in `.gitignore`
-- Always use `.env.example` as a template and create `.env` locally
-- The `.env` file is safe to deploy to your servers (that's its purpose!)
-- Just make sure it's NEVER committed to git (`.gitignore` protects this)
-- For cloud deployments (ECS/Fargate), use environment variables directly in the service configuration instead of `.env`
-
 ## Legal Notice
 
 This tool is for educational and personal use only. Web scraping may violate TikTok's Terms of Service. Use responsibly and at your own risk. I am not responsible for any misuse or consequences.
