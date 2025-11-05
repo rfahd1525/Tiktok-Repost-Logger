@@ -6,7 +6,7 @@ Get instant alerts when new TikTok reposts are detected! This guide will help yo
 
 Edit your `.env` file and add notification settings. You can use **Email**, **Telegram**, or **both**!
 
-## Option 1: Email Notifications (Recommended for SMS)
+## Option 1: Email Notifications
 
 Email notifications work great and can forward to your phone via SMS gateways.
 
@@ -32,17 +32,7 @@ Email notifications work great and can forward to your phone via SMS gateways.
    ```
 
 3. **For SMS notifications via email:**
-   Use your carrier's email-to-SMS gateway as the `NOTIFICATION_EMAIL`:
-
-   - **AT&T**: `your_number@txt.att.net`
-   - **T-Mobile**: `your_number@tmomail.net`
-   - **Verizon**: `your_number@vtext.com`
-   - **Sprint**: `your_number@messaging.sprintpcs.com`
-
-   Example for AT&T:
-   ```bash
-   NOTIFICATION_EMAIL=5551234567@txt.att.net
-   ```
+   Use your carrier's email-to-SMS gateway (if it is supported) as the `NOTIFICATION_EMAIL`:
 
 ### Other Email Providers:
 
