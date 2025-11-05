@@ -116,16 +116,6 @@ After configuring notifications, test them locally:
 
 You should receive a test notification!
 
-## Deploying to AWS
-
-After setting up notifications locally, deploy to AWS:
-
-```bash
-./deploy.sh ~/.ssh/tiktoklog.pem 3.145.68.9
-```
-
-The script will copy your `.env` file with notification settings to the server.
-
 ## Troubleshooting
 
 ### Email Issues:
@@ -155,13 +145,6 @@ The script will copy your `.env` file with notification settings to the server.
 **Not receiving messages**
 - Check that your bot token and chat ID are both correct
 - Ensure there are no typos in your `.env` file
-
-## Security Notes
-
-- Never commit your `.env` file to git (it's in `.gitignore`)
-- Use App Passwords, not your main email password
-- Keep your bot token secret
-- The notification settings are only stored locally and on your EC2 instance
 
 ## What You'll Receive
 
