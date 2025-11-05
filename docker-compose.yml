@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  tiktok-repost-logger:
+    build: .
+    container_name: tiktok-repost-logger
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Mount data directory to persist logs and state
+      - ./data:/app/data
+    environment:
+      # Override paths to use mounted volume
+      - LOG_FILE_PATH=/app/data/reposts.log
+      - STATE_FILE_PATH=/app/data/repost_state.json
+      # Ensure headless mode in Docker
+      - HEADLESS=true
+    # Allocate more shared memory for browser
+    shm_size: '2gb'
+    # Optional: Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
