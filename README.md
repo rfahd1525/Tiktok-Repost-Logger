@@ -1,6 +1,6 @@
 # TikTok Repost Logger
 
-A Python-based application that monitors a TikTok user's reposts and logs new ones to a file. Built with Playwright for reliable browser automation and designed for 24/7 operation on AWS.
+A Python-based application that monitors a TikTok user's reposts and logs new ones to a file.
 
 ## Features
 
