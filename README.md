@@ -68,7 +68,7 @@ A Python-based application that monitors a TikTok user's reposts and logs new on
 
    Edit `.env` with your settings.
 
-   **⚠️ IMPORTANT:** The `.env` file is required and must exist for Docker Compose to work. It is NOT included in the repository for security reasons.
+   **⚠️ IMPORTANT:** The `.env` file is required and must exist for Docker Compose to work.
 
 2. **Build and run with Docker Compose**
    ```bash
