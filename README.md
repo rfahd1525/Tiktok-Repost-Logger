@@ -262,11 +262,7 @@ aws logs tail /ecs/tiktok-repost-logger --follow
 - Consider using a proxy (requires code modification)
 - Reduce `MAX_RETRIES` to avoid aggressive retrying
 
-**3. Browser crashes in Docker**
-- Increase shared memory: `shm_size: '2gb'` in docker-compose.yml
-- Increase container memory limits
-
-**4. Login fails**
+**3. Login fails**
 - TikTok may require CAPTCHA solving
 - Run in non-headless mode to solve CAPTCHA manually: `HEADLESS=false`
 - Consider using cookies from a logged-in session (requires code modification)
