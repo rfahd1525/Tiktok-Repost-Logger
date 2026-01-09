@@ -1,6 +1,6 @@
 """
 TikTok Repost Logger - Main application logic.
-Monitors a TikTok user's reposts, logging new ones.
+Monitors a TikTok user's reposts and logs new ones.
 """
 
 import asyncio
@@ -42,6 +42,8 @@ class TikTokRepostLogger:
         self.restart_hours = 6  # Restart container every N hours to prevent corruption
         self.consecutive_failures = 0  # Track consecutive failures
         self.consecutive_tab_not_found = 0  # Track consecutive "Reposts tab not found" errors
+        self.consecutive_timeouts = 0  # Track consecutive page load timeouts
+        self.consecutive_generic_errors = 0  # Track consecutive generic errors
 
         # Display configuration
         print("TikTok Repost Logger initialized with configuration:")
@@ -138,12 +140,9 @@ class TikTokRepostLogger:
         try:
             # Navigate to user's profile
             profile_url = f"https://www.tiktok.com/@{Config.TIKTOK_USERNAME}"
-            print(f"Fetching from: {profile_url}")
+            print(f"Fetching reposts from: {profile_url}")
 
-            await self.page.goto(profile_url, timeout=60000, wait_until='domcontentloaded')
-
-            # Wait for page to fully render after DOM loads
-            await asyncio.sleep(5)
+            await self.page.goto(profile_url, timeout=30000, wait_until='networkidle')
 
             # Wait for profile content to load - look for a profile indicator
             try:
@@ -152,7 +151,6 @@ class TikTokRepostLogger:
                 # Fallback to time-based wait if no profile indicator found
                 await asyncio.sleep(3)
 
-            # Click on Reposts tab to get reposts
             # Look for the "Reposts" tab - TikTok's structure may vary
             # Expanded selectors for better reliability (text-based first, then data attributes)
             repost_tab_selectors = [
@@ -188,8 +186,8 @@ class TikTokRepostLogger:
                 self.logger.log_info("Reposts tab not found, attempting page reload")
                 
                 # Reload the page and try again
-                await self.page.reload(timeout=60000, wait_until='domcontentloaded')
-                await asyncio.sleep(5)
+                await self.page.reload(wait_until='networkidle')
+                await asyncio.sleep(3)
                 
                 # Try selectors again after reload
                 for selector in repost_tab_selectors:
@@ -207,12 +205,12 @@ class TikTokRepostLogger:
             # If still not found after reload, handle the error
             if not repost_tab_found:
                 self.consecutive_tab_not_found += 1
-                error_msg = f"Could not find Reposts tab. Profile may have no reposts or TikTok structure changed. (Consecutive: {self.consecutive_tab_not_found}/3)"
+                error_msg = f"Could not find Reposts tab. Profile may have no reposts or TikTok structure changed. (Consecutive: {self.consecutive_tab_not_found}/2)"
                 print(f"Warning: {error_msg}")
                 self.logger.log_error(error_msg)
                 
-                # If we've had 3 consecutive "tab not found" errors, trigger container restart
-                if self.consecutive_tab_not_found >= 3:
+                # If we've had 2 consecutive "tab not found" errors, trigger container restart
+                if self.consecutive_tab_not_found >= 2:
                     print(f"\nDetected {self.consecutive_tab_not_found} consecutive 'Reposts tab not found' errors")
                     print("Performing preventive container restart...")
                     self.logger.log_info("Triggering container restart due to consecutive 'Reposts tab not found' errors")
@@ -257,20 +255,44 @@ class TikTokRepostLogger:
                     unique_reposts.append(repost)
 
             print(f"Found {len(unique_reposts)} repost(s)")
-            # Reset the tab not found counter on success
+            # Reset counters on success
             self.consecutive_tab_not_found = 0
+            self.consecutive_timeouts = 0
+            self.consecutive_generic_errors = 0
             return unique_reposts
 
         except PlaywrightTimeout as e:
-            error_msg = f"Timeout while fetching reposts: {e}"
+            self.consecutive_timeouts += 1
+            error_msg = f"Timeout while fetching reposts: {e} (Consecutive: {self.consecutive_timeouts}/2)"
             print(f"Error: {error_msg}")
             self.logger.log_error(error_msg)
+            
+            # If we've had 2 consecutive timeouts, trigger container restart
+            if self.consecutive_timeouts >= 2:
+                print(f"\nDetected {self.consecutive_timeouts} consecutive timeout errors")
+                print("Performing preventive container restart...")
+                self.logger.log_info("Triggering container restart due to consecutive timeout errors")
+                await self.cleanup()
+                print("Exiting for container restart...")
+                sys.exit(0)  # Docker will restart the container
+            
             return reposts
 
         except Exception as e:
-            error_msg = f"Error fetching reposts: {e}"
+            self.consecutive_generic_errors += 1
+            error_msg = f"Error fetching reposts: {e} (Consecutive: {self.consecutive_generic_errors}/2)"
             print(f"Error: {error_msg}")
             self.logger.log_error(error_msg)
+            
+            # If we've had 2 consecutive generic errors, trigger container restart
+            if self.consecutive_generic_errors >= 2:
+                print(f"\nDetected {self.consecutive_generic_errors} consecutive generic errors")
+                print("Performing preventive container restart...")
+                self.logger.log_info("Triggering container restart due to consecutive generic errors")
+                await self.cleanup()
+                print("Exiting for container restart...")
+                sys.exit(0)  # Docker will restart the container
+            
             return reposts
 
     async def detect_and_log_new_reposts(self, current_reposts: List[Dict[str, str]]):
